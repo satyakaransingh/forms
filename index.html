@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ud Bhai - Forms Portal</title>
+
+  <style>
+    :root{
+      --bg:#0f172a; --card:#0b1220; --muted:#64748b;
+      --accent:#2563eb; --accent-2:#06b6d4; --glass: rgba(255,255,255,0.02);
+      --radius:12px; --shadow: 0 12px 30px rgba(15,23,42,0.06);
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', Arial;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#f7fbff,#eef2ff);color:#0f172a;min-height:100vh}
+
+    .main{max-width:1100px;margin:20px auto;padding:16px}
+    .navbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-radius:14px;background:#fff;box-shadow:var(--shadow)}
+    .logo{display:flex;align-items:center;gap:10px;font-weight:800}
+    .logo-mark{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent-2),var(--accent));color:white;display:flex;align-items:center;justify-content:center}
+
+    .nav-links{display:flex;gap:10px;list-style:none}
+    .nav-links a{padding:8px 12px;border-radius:10px;text-decoration:none;font-weight:700;color:#555}
+    .nav-links a.active{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white}
+
+    #content{margin-top:20px;background:#fff;padding:18px;border-radius:14px;min-height:400px;box-shadow:var(--shadow)}
+
+    /* skeleton */
+    .loading{display:grid;gap:8px}
+    .skeleton{height:14px;background:#eef2ff;border-radius:6px}
+    .skeleton.h1{height:20px;width:40%}
+
+    footer{text-align:center;margin-top:25px;color:#777}
+  </style>
+</head>
+
+<body>
+<div class="main">
+
+  <nav class="navbar">
+    <div class="logo"><div class="logo-mark">UD</div><span>Ud Bhai</span></div>
+
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#" data-page="home.html" class="active">Home</a></li>
+      <li><a href="#" data-page="forms.html">Forms</a></li>
+      <li><a href="#" data-page="contect.html">Contact</a></li>
+    </ul>
+  </nav>
+
+  <main id="content"></main>
+
+  <footer>Made with ❤️ by Ud Bhai</footer>
+
+</div>
+
+<script>
+
+/* ---------------------------------------------------
+   CLEAN FIXED PAGE LOADER 
+--------------------------------------------------- */
+
+async function loadPage(page){
+  const content = document.getElementById("content");
+
+  // Loading skeleton
+  content.innerHTML = `
+    <div class="loading">
+      <div class="skeleton h1"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+    </div>
+  `;
+
+  try{
+    const resp = await fetch(page, {cache:"no-store"});
+    const html = await resp.text();
+
+    content.innerHTML = html;
+
+    // Run inline scripts inside loaded page
+    runInlineScripts(content);
+
+    // Special: If forms.html defines initForms()
+    if(typeof window.initForms === "function"){
+      window.initForms();
+    }
+
+    // Set active nav link
+    document.querySelectorAll("#navLinks a").forEach(a =>
+      a.classList.toggle("active", a.dataset.page === page)
+    );
+
+  }catch(err){
+    content.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+  }
+}
+
+function runInlineScripts(container){
+  container.querySelectorAll("script").forEach(old=>{
+    const s = document.createElement("script");
+    if(old.src) s.src = old.src;
+    s.textContent = old.textContent;
+    document.body.appendChild(s);
+    old.remove();
+  });
+}
+
+/* ---------------------------------------------------
+   NAV CLICK HANDLER
+--------------------------------------------------- */
+document.querySelectorAll("#navLinks a").forEach(a=>{
+  a.addEventListener("click", function(e){
+    e.preventDefault();
+    loadPage(a.dataset.page);
+  });
+});
+
+/* ---------------------------------------------------
+   GLOBAL DOWNLOAD + PREVIEW HANDLER (delegation)
+--------------------------------------------------- */
+document.addEventListener("click", function(e){
+
+  const dl = e.target.closest("[data-download], .download-btn");
+  if(dl){
+    e.preventDefault();
+    const file = dl.dataset.file || dl.href;
+    const a = document.createElement("a");
+    a.href = file;
+    a.download = file.split("/").pop();
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    return;
+  }
+
+  const pv = e.target.closest("[data-preview], .preview-link");
+  if(pv){
+    e.preventDefault();
+    const file = pv.dataset.file || pv.href;
+    window.open(file, "_blank");
+  }
+
+});
+
+/* ---------------------------------------------------
+   LOAD DEFAULT PAGE
+--------------------------------------------------- */
+loadPage("home.html");
+
+</script>
+
+</body>
+</html>

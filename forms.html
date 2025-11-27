@@ -1,0 +1,158 @@
+<!-- forms.html -->
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Forms (fragment)</title>
+  <style>
+    /* minimal styles to keep fragment presentable when injected */
+    table{width:100%;border-collapse:collapse}
+    thead th{padding:8px;text-align:left;border-bottom:1px solid #ddd;background:#f3f6ff}
+    tbody td{padding:10px;border-bottom:1px solid #eee}
+    .sno{width:90px;color:#64748b;font-weight:700}
+    .download-btn{padding:8px 10px;border-radius:8px;background:#2563eb;color:#fff;border:0;cursor:pointer}
+    .preview-link{padding:8px 10px;border-radius:8px;border:1px solid #dbeafe;color:#2563eb;text-decoration:none}
+    .actions{display:flex;gap:8px;align-items:center}
+    .empty{padding:16px;color:#64748b;text-align:center}
+  </style>
+</head>
+<body>
+  <!-- Keep structure minimal so it can be inserted into .container -->
+  <div id="forms-fragment">
+    <table role="table" aria-label="Forms table">
+      <thead>
+        <tr><th class="sno">S. No</th><th>Form Name</th><th>Action</th></tr>
+      </thead>
+      <tbody id="tb"></tbody>
+    </table>
+    <div id="empty" class="empty" style="display:none">Koi form nahi mila.</div>
+  </div>
+
+  <script>
+    /**
+     * forms.html - safe fragment that exposes window.initForms()
+     * - call window.initForms() after injecting this fragment into DOM (or it auto-runs when loaded standalone)
+     * - uses data-file attributes for download/preview
+     */
+
+    // Replace or extend this array as needed
+    const formsData = [
+      { id: '1', name: 'आय प्रमाण पत्र (Income Certificate)', file: '' },
+      { id: '1-A', name: 'आरटीई के लिए आय प्रमाण पत्र', file: 'files/RTE-Income-Certificate-Download.pdf' },
+      { id: '1-B', name: 'आय प्रमाण पत्र (Alternate)', file: 'files/income-certificate-new.pdf' }
+      // { id: '2', name:'my form ',file:'files/income-certificate-new.pdf'}
+    ];
+
+    // expose init function
+    window.initForms = function initForms(){
+      const tbody = document.getElementById('tb');
+      const empty = document.getElementById('empty');
+      if(!tbody) return; // if fragment injected into a different container without tb
+      tbody.innerHTML = ''; // reset each time
+
+      if(!Array.isArray(formsData) || formsData.length === 0){
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+
+      formsData.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="sno">${escapeHtml(item.id)}</td>
+          <td class="form-name">${escapeHtml(item.name)}</td>
+          <td>
+            <div class="actions">
+              <button class="download-btn" type="button" data-file="${encodeURI(item.file)}">Download</button>
+              <a class="preview-link" href="#" data-file="${encodeURI(item.file)}">Preview</a>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    };
+
+    // simple escape
+    function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
+
+    // Attach delegated listeners once (so repeated injection won't create duplicates)
+    if(!window._formsHandlersAttached){
+      window._formsHandlersAttached = true;
+
+      // delegated click for downloads and previews
+      document.addEventListener('click', function(event){
+        const dl = event.target.closest('.download-btn');
+        if(dl){
+          event.preventDefault();
+          const file = dl.dataset.file;
+          if(!file) return;
+          // trigger download via temporary link
+          const a = document.createElement('a');
+          a.href = file;
+          a.download = file.split('/').pop();
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          return;
+        }
+
+        const pv = event.target.closest('.preview-link');
+        if(pv){
+          event.preventDefault();
+          const file = pv.dataset.file;
+          if(!file) return;
+          // show a simple preview modal (create if needed)
+          openPreviewModal(file, pv.closest('tr')?.querySelector('.form-name')?.textContent || '');
+        }
+      }, true);
+
+      // simple preview modal builder (only one instance)
+      function openPreviewModal(url, title){
+        let modal = document.getElementById('formsPreviewModal');
+        if(!modal){
+          modal = document.createElement('div');
+          modal.id = 'formsPreviewModal';
+          modal.style = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:9999;';
+          modal.innerHTML = `
+            <div style="width:92%;max-width:900px;height:84%;background:#fff;border-radius:8px;overflow:hidden;display:flex;flex-direction:column">
+              <div style="padding:10px 12px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center">
+                <strong id="formsPreviewTitle"></strong>
+                <div style="display:flex;gap:8px">
+                  <a id="formsPreviewDownload" class="download-btn" style="margin-right:8px" href="#" download>Download</a>
+                  <button id="formsPreviewClose" class="preview-link">Close</button>
+                </div>
+              </div>
+              <iframe id="formsPreviewFrame" style="border:0;flex:1;width:100%"></iframe>
+            </div>
+          `;
+          document.body.appendChild(modal);
+
+          document.getElementById('formsPreviewClose').addEventListener('click', ()=> modal.remove());
+          modal.addEventListener('click', (ev) => { if(ev.target === modal) modal.remove(); });
+          document.addEventListener('keydown', (e)=> { if(e.key === 'Escape') modal.remove(); });
+        }
+
+        // set contents
+        document.getElementById('formsPreviewTitle').textContent = title;
+        const iframe = document.getElementById('formsPreviewFrame');
+        iframe.src = url;
+        const dl = document.getElementById('formsPreviewDownload');
+        dl.href = url;
+        dl.download = url.split('/').pop();
+
+        // show (modal is already appended) - ensure visible
+        modal.style.display = 'flex';
+      }
+    }
+
+    // auto-run init when forms.html is loaded standalone in browser
+    if (document.readyState !== 'loading') {
+      // run in next tick so that elements are present
+      setTimeout(()=>{ if(typeof window.initForms === 'function') window.initForms(); }, 0);
+    } else {
+      document.addEventListener('DOMContentLoaded', ()=>{ if(typeof window.initForms === 'function') window.initForms(); });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Contact — Enhanced UI</title>
+  <style>
+    :root{
+      --bg:#f4f7fb;
+      --card:#ffffff;
+      --accent-1: #06b6d4; /* teal */
+      --accent-2: #3b82f6; /* blue */
+      --muted:#6b7280;
+      --success:#16a34a;
+      --radius:12px;
+      --shadow: 0 10px 30px rgba(41,50,60,0.06);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    /* body{
+      margin:0;
+      background: linear-gradient(180deg, #eef7fb 0%, var(--bg) 60%);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:36px;
+      color:#0f172a;
+    } */
+
+    /* Page wrapper */
+    .wrap{
+      width:100%;
+      max-width:980px;
+      display:grid;
+      grid-template-columns: 1fr 420px;
+      gap:28px;
+      align-items:start;
+    }
+
+    /* Left: intro / info */
+    .hero{
+      padding:28px;
+    }
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-bottom:18px;
+    }
+    /* logo{
+      width:56px;height:56px;border-radius:10px;
+      background:linear-gradient(135deg,var(--accent-1),var(--accent-2));
+      display:grid;place-items:center;color:white;font-weight:700;box-shadow:0 6px 18px rgba(59,130,246,0.15);
+      font-size:20px;
+    } */
+    h1{margin:0 0 8px;font-size:24px;letter-spacing:-0.2px}
+    p.lead{margin:0;color:var(--muted);line-height:1.55}
+
+    /* Right: form card */
+    .contact-container{
+      background:var(--card);
+      padding:22px;
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      border:1px solid rgba(15,23,42,0.03);
+      position:relative;
+      overflow:hidden;
+    }
+    .contact-container h2{
+      margin:0 0 12px;font-size:20px;
+    }
+    .hint{font-size:13px;color:var(--muted);margin-bottom:16px}
+
+    /* Floating label fields */
+    .field{
+      position:relative;
+      margin-bottom:14px;
+    }
+    .field input, .field textarea{
+      width:100%;
+      padding:14px 14px 14px 44px;
+      border-radius:10px;
+      border:1px solid #e6eefc;
+      background:transparent;
+      font-size:15px;
+      outline:none;
+      transition:all .18s ease;
+      resize:vertical;
+    }
+    .field textarea{min-height:110px;padding-top:18px}
+    .field svg{
+      position:absolute;left:12px;top:50%;transform:translateY(-50%);width:20px;height:20px;opacity:0.9;
+    }
+    .field label{
+      position:absolute;left:44px;top:14px;pointer-events:none;color:var(--muted);
+      font-size:13px;transition:all .15s ease;
+    }
+    .field input:focus, .field textarea:focus{
+      border-color:rgba(59,130,246,0.95);
+      box-shadow:0 6px 18px rgba(59,130,246,0.06);
+    }
+    /* floating effect when focused or filled */
+    .field input:focus + label,
+    .field input:not(:placeholder-shown) + label,
+    .field textarea:focus + label,
+    .field textarea:not(:placeholder-shown) + label{
+      transform:translateY(-10px) scale(.92);
+      left:44px; top:8px;
+      background:var(--card); padding:0 6px; color:var(--accent-2);
+    }
+
+    .actions{display:flex;gap:12px;align-items:center;margin-top:8px}
+    .btn{
+      padding:12px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:600;
+      background:linear-gradient(90deg,var(--accent-2),var(--accent-1));color:white;
+      box-shadow:0 8px 26px rgba(59,130,246,0.12);
+      transition:transform .14s ease, box-shadow .14s ease;
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn.secondary{
+      background:transparent;color:var(--muted);border:1px solid #eef2ff;font-weight:700;
+    }
+    .small{font-size:13px;color:var(--muted)}
+
+    /* success toast */
+    .toast{
+      position:fixed;right:20px;bottom:20px;background:linear-gradient(90deg,#ecfdf5,#d1fae5);
+      color:var(--success);padding:12px 16px;border-radius:10px;border:1px solid rgba(16,185,129,0.12);
+      box-shadow:0 8px 30px rgba(16,185,129,0.06);display:flex;gap:10px;align-items:center;font-weight:600;
+      transform:translateY(12px);opacity:0;pointer-events:none;transition:all .22s ease;
+    }
+    .toast.show{opacity:1;transform:translateY(0);pointer-events:auto}
+
+    /* responsive */
+    @media (max-width:960px){
+      .wrap{grid-template-columns:1fr; padding:0 12px}
+      .contact-container{order:2}
+    }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div class="brand">
+        <!-- <div class="logo">FP</div> -->
+        <div>
+          <div style="font-size:13px;color:var(--muted)">Forms Portal</div>
+          <div style="font-weight:700">Download & Print – Official Forms</div>
+        </div>
+      </div>
+
+      <h1>Contact / Support</h1>
+      <p class="lead">Kisi bhi form (jaise आय प्रमाण पत्र) me help chahiye ho ya koi document upload karna ho to yahan message bhejiye. Hum jaldi contact karenge.</p>
+
+      <div style="margin-top:20px;padding:16px;background:linear-gradient(180deg,#fff,#fbfdff);border-radius:10px;border:1px solid #f0f7ff">
+        <div style="font-weight:700;margin-bottom:6px">Office Timings</div>
+        <div class="small">Mon — Sat : 09:30 AM — 06:00 PM</div>
+        <div style="height:8px"></div>
+        <div style="font-weight:700;margin-bottom:6px">Phone</div>
+        <div class="small">+91 9057706764</div>
+      </div>
+    </div>
+
+    <div class="contact-container" role="region" aria-labelledby="contact-title">
+      <h2 id="contact-title">Contact Us</h2>
+      <div class="hint">Fill the form and we will get back to you within 24 hours.</div>
+
+      <form id="contactForm" novalidate>
+        <div class="field">
+          <!-- user icon -->
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden><path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zM4 20c0-3.314 2.686-6 6-6h4c3.314 0 6 2.686 6 6" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <input id="name" type="text" placeholder=" " required />
+          <label for="name">Your Name</label>
+        </div>
+
+       <div class="field">
+  <!-- email icon -->
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden>
+    <path d="M3 8l9 6 9-6" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M21 8v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+
+  <!-- strong pattern + custom validity + ARIA -->
+  <input
+    id="email"
+    name="email"
+    type="email"
+    placeholder=" "
+    required
+    aria-required="true"
+    aria-describedby="emailError"
+    pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+  />
+  <label for="email">Email Address</label>
+  <div id="emailError" class="error-msg" aria-live="polite" role="status" style="display:none; color:#ef4444; font-size:13px; margin-top:6px;">
+    कृपया मान्य ईमेल पता दर्ज करें (उदाहरण: name@example.com)
+  </div>
+</div>
+
+
+        <div class="field">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden><path d="M22 16.92V21a1 1 0 0 1-1.11 1 19.86 19.86 0 0 1-8.63-3.11 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2 3.11 1 1 0 0 1 3 2h4.09a1 1 0 0 1 1 .75 12.7 12.7 0 0 0 .7 2.7 1 1 0 0 1-.24 1L7.35 8.65a16 16 0 0 0 8 8l1.2-1.2a1 1 0 0 1 1-.24 12.7 12.7 0 0 0 2.7.7 1 1 0 0 1 .75 1V22z" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <input id="phone" type="tel" placeholder=" " inputmode="numeric" pattern="[0-9]{10}" required />
+          <label for="phone">Mobile Number</label>
+        </div>
+
+        <div class="field">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden><path d="M21 15v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h11" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 3v8" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <textarea id="message" placeholder=" " required></textarea>
+          <label for="message">Message</label>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="btn">Send Message</button>
+          <button type="button" class="btn secondary" id="clearBtn">Clear</button>
+        </div>
+
+        <div style="height:8px"></div>
+        <div class="small">We respect your privacy. Your information will not be shared.</div>
+      </form>
+    </div>
+  </div>
+
+  <!-- toast -->
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div id="toastMsg">Message sent successfully</div>
+  </div>
+
+  <script>
+    const form = document.getElementById('contactForm');
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toastMsg');
+    const clearBtn = document.getElementById('clearBtn');
+
+    function showToast(text){
+      toastMsg.textContent = text;
+      toast.classList.add('show');
+      setTimeout(()=> toast.classList.remove('show'), 3000);
+    }
+
+    form.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      // simple validation
+      const name = document.getElementById('name');
+      const email = document.getElementById('email');
+      const phone = document.getElementById('phone');
+      const message = document.getElementById('message');
+
+      if(!name.value.trim() || !email.value.trim() || !phone.value.trim() || !message.value.trim()){
+        showToast('कृपया सभी फ़ील्ड भरें');
+        return;
+      }
+      // phone pattern basic check
+      const phoneVal = phone.value.replace(/\D/g,'');
+      if(phoneVal.length < 10){
+        showToast('कृपया मान्य मोबाइल नंबर दें');
+        return;
+      }
+
+      // At this point, you can POST data to your server or API.
+      // For demo: show success and reset form
+      showToast('आपका संदेश भेज दिया गया है — हम जल्द संपर्क करेंगे');
+      form.reset();
+    });
+
+    clearBtn.addEventListener('click', ()=> form.reset());
+  </script>
+</body>
+</html>
